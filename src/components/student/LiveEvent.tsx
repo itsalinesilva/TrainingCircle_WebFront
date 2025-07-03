@@ -1,9 +1,22 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Users, Smile } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ArrowLeft, 
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
+  Send,
+  Eye,
+  Square,
+  Play,
+  Smile,
+  Settings
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface LiveEventProps {
   onBack: () => void;
@@ -17,13 +30,16 @@ const mockMessages = [
 
 const emojis = ["👍", "💪", "🔥", "❤️", "😄", "👏", "💯", "⚡"];
 
-export default function LiveEvent({ onBack }: LiveEventProps) {
+function LiveEvent({ onBack }: LiveEventProps) {
   const [isLive, setIsLive] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(true);
   const [countdown, setCountdown] = useState(180); // 3 minutos em segundos
   const [participants, setParticipants] = useState(148);
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState(mockMessages);
   const [showEmojis, setShowEmojis] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isLive && countdown > 0) {
@@ -49,161 +65,207 @@ export default function LiveEvent({ onBack }: LiveEventProps) {
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      const message = {
+      const newMsg = {
         id: messages.length + 1,
         user: "Você",
         message: newMessage,
-        timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      setMessages([...messages, message]);
+      setMessages([...messages, newMsg]);
       setNewMessage("");
     }
   };
 
   const handleEmojiClick = (emoji: string) => {
-    const message = {
-      id: messages.length + 1,
-      user: "Você",
-      message: emoji,
-      timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-    };
-    setMessages([...messages, message]);
+    setNewMessage(prev => prev + emoji);
     setShowEmojis(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    toast({
+      title: isMuted ? "Microfone ativado" : "Microfone desativado",
+      variant: "default",
+    });
+  };
+
+  const toggleCamera = () => {
+    setIsCameraOn(!isCameraOn);
+    toast({
+      title: isCameraOn ? "Câmera desativada" : "Câmera ativada",
+      variant: "default",
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-black/80 backdrop-blur-sm">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="text-white hover:bg-white/10"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        
-        <div className="flex items-center gap-4">
-          {/* Participants Counter */}
-          <div className="flex items-center gap-2 bg-black/50 px-3 py-1 rounded-full">
-            <Users className="w-4 h-4" />
-            <span className="text-sm">{participants} assistindo</span>
+      <div className="bg-indigo-900 text-white p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-white hover:bg-indigo-800"
+            onClick={onBack}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg font-semibold">Evento ao Vivo</h1>
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            <span className="text-sm">Ao Vivo</span>
           </div>
-          
-          {/* Live/Countdown Indicator */}
-          <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-            isLive 
-              ? 'bg-red-600 animate-pulse' 
-              : 'bg-indigo-900'
-          }`}>
-            {isLive ? "🔴 AO VIVO" : `Início em: ${formatTime(countdown)}`}
+          <div className="flex items-center space-x-1 text-sm">
+            <Eye className="h-4 w-4" />
+            <span>{participants}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex">
+      {/* Main Content */}
+
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-gray-50">
         {/* Video Area */}
-        <div className="flex-1 relative">
-          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-            {isLive ? (
-              <div className="text-center">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-900 to-purple-800 mx-auto mb-4 flex items-center justify-center">
-                  <div className="w-16 h-16 border-4 border-white rounded-full animate-pulse"></div>
+        <div className="flex-1 flex flex-col min-h-0 p-2 md:p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+            {/* Video Placeholder */}
+            <div className="aspect-video bg-gray-100 flex items-center justify-center">
+              {!isLive ? (
+                <div className="text-center p-6">
+                  <div className="text-4xl font-bold text-indigo-900 mb-3">
+                    {formatTime(countdown)}
+                  </div>
+                  <p className="text-gray-600">O evento começará em breve</p>
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Transmissão Ao Vivo</h2>
-                <p className="text-slate-300">Treino Funcional com Maria Santos</p>
+              ) : (
+                <div className="text-center p-6">
+                  <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+                    <span className="text-4xl">🏋️</span>
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-1">Aula de Treinamento</h2>
+                  <p className="text-gray-500 text-sm">Com Personal Trainer</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Player Controls */}
+            <div className="border-t border-gray-100 p-2 bg-gray-50">
+              <div className="flex items-center justify-between px-2">
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 text-gray-600 hover:bg-gray-100"
+                    onClick={toggleMute}
+                  >
+                    {isMuted ? (
+                      <MicOff className="h-4 w-4" />
+                    ) : (
+                      <Mic className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <div className="h-1 w-24 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-600 w-3/4"></div>
+                  </div>
+                  <span className="text-xs text-gray-500">75%</span>
+                </div>
+                
+                <div className="flex items-center space-x-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 text-gray-600 hover:bg-gray-100"
+                    title="Configurações"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            ) : (
-              <div className="text-center">
-                <div className="w-32 h-32 rounded-full bg-slate-700 mx-auto mb-4 flex items-center justify-center">
-                  <div className="text-4xl font-bold">{formatTime(countdown)}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Area */}
+        <div className="w-full md:w-80 border-t md:border-t-0 md:border-l border-gray-200 flex flex-col bg-white h-[400px] md:h-auto">
+          <div className="p-3 border-b border-gray-200">
+            <h3 className="font-medium text-gray-900 text-sm">Chat ao Vivo</h3>
+          </div>
+          
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((msg) => (
+              <div 
+                key={msg.id} 
+                className={`p-3 rounded-lg ${msg.user === "Você" ? 'bg-indigo-50 ml-6' : 'bg-gray-50'}`}
+              >
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span className={`font-medium ${msg.user === "Você" ? 'text-indigo-900' : 'text-gray-700'}`}>
+                    {msg.user}
+                  </span>
+                  <span>{msg.timestamp}</span>
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Evento Iniciando Em Breve</h2>
-                <p className="text-slate-300">Prepare-se para o treino!</p>
+                <p className="mt-1 text-sm text-gray-800">{msg.message}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Message Input */}
+          <div className="p-2 border-t border-gray-200 bg-gray-50">
+            <div className="flex items-center space-x-1">
+              <Input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Enviar mensagem..."
+                className="flex-1 bg-white"
+                onKeyDown={handleKeyPress}
+              />
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="text-gray-500 hover:text-indigo-600"
+                onClick={handleSendMessage}
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="text-gray-500 hover:text-indigo-600"
+                onClick={() => setShowEmojis(!showEmojis)}
+              >
+                <Smile className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Emoji Picker */}
+            {showEmojis && (
+              <div className="mt-2 p-2 bg-white border border-gray-200 rounded-md grid grid-cols-8 gap-1">
+                {emojis.map((emoji, index) => (
+                  <button
+                    key={index}
+                    className="text-xl hover:bg-gray-100 rounded p-1"
+                    onClick={() => handleEmojiClick(emoji)}
+                  >
+                    {emoji}
+                  </button>
+                ))}
               </div>
             )}
           </div>
         </div>
-
-        {/* Chat Sidebar */}
-        <Card className="w-80 bg-slate-900 border-l border-slate-700 rounded-none flex flex-col">
-          <CardContent className="flex-1 p-0 flex flex-col">
-            {/* Chat Header */}
-            <div className="p-4 border-b border-slate-700">
-              <h3 className="font-semibold text-white">Chat do Evento</h3>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3">
-              {messages.map((msg) => (
-                <div key={msg.id} className="text-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-indigo-300">{msg.user}</span>
-                    <span className="text-xs text-slate-400">{msg.timestamp}</span>
-                  </div>
-                  <p className="text-slate-200">{msg.message}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Emoji Selector */}
-            {showEmojis && (
-              <div className="p-4 border-t border-slate-700">
-                <div className="grid grid-cols-4 gap-2">
-                  {emojis.map((emoji, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleEmojiClick(emoji)}
-                      className="text-2xl p-2 hover:bg-slate-700 rounded transition-colors"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Message Input */}
-            <div className="p-4 border-t border-slate-700">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Digite sua mensagem..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="flex-1 bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 focus:border-indigo-500"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowEmojis(!showEmojis)}
-                  className="text-white hover:bg-slate-700"
-                >
-                  <Smile className="w-4 h-4" />
-                </Button>
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim()}
-                  size="sm"
-                  className="bg-indigo-900 hover:bg-indigo-800"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
 }
 
-
+export default LiveEvent;

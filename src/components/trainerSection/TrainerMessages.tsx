@@ -95,10 +95,13 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-180px)]">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-180px)] gap-4">
         {/* Lista de Alunos */}
-        <Card className="lg:col-span-1 border-0 shadow-sm overflow-hidden">
-          <CardHeader className="pb-3 border-b">
+        <Card className={cn(
+          "lg:w-1/3 xl:w-1/4 border-0 lg:border-r rounded-none shadow-sm overflow-hidden flex flex-col h-full",
+          selectedConversation && "hidden lg:flex"
+        )}>
+          <CardHeader className="p-3 border-b">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -109,35 +112,41 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
               />
             </div>
           </CardHeader>
-          <ScrollArea className="h-[calc(100%-73px)]">
+          <ScrollArea className="flex-1">
             <div className="divide-y">
               {filteredConversations.map((conversation) => (
                 <div
                   key={conversation.id}
                   onClick={() => setSelectedConversation(conversation.id)}
                   className={cn(
-                    "p-3 cursor-pointer transition-colors hover:bg-accent/50",
+                    "px-4 py-3 cursor-pointer transition-colors hover:bg-accent/50",
                     selectedConversation === conversation.id && "bg-accent"
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 border-2 border-background">
+                    <Avatar className="h-10 w-10 flex-shrink-0">
                       <AvatarFallback className="bg-gradient-to-br from-indigo-900 to-purple-900 text-white">
                         {conversation.avatar}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm truncate">{conversation.student}</p>
-                        <span className="text-xs text-muted-foreground">{conversation.timestamp}</span>
+                        <p className="font-medium text-sm truncate pr-2">{conversation.student}</p>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {conversation.timestamp}
+                          </span>
+                          {conversation.unread > 0 && (
+                            <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs flex-shrink-0">
+                              {conversation.unread}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{conversation.lastMessage}</p>
+                      <p className="text-sm text-muted-foreground truncate mt-0.5">
+                        {conversation.lastMessage}
+                      </p>
                     </div>
-                    {conversation.unread > 0 && (
-                      <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
-                        {conversation.unread}
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -146,19 +155,30 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
         </Card>
 
         {/* Área de Conversa */}
-        <div className="lg:col-span-3">
+        <div className={cn(
+          "flex-1 h-full flex flex-col",
+          !selectedConversation && "hidden lg:flex"
+        )}>
           {selectedConv ? (
             <Card className="border-0 shadow-sm h-full flex flex-col">
-              <CardHeader className="border-b py-3">
+              <CardHeader className="border-b py-3 px-4 bg-muted/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 border-2 border-background">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="lg:hidden mr-1"
+                      onClick={() => setSelectedConversation(null)}
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-gradient-to-br from-indigo-900 to-purple-900 text-white">
                         {selectedConv.avatar}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <CardTitle className="text-lg">{selectedConv.student}</CardTitle>
+                      <CardTitle className="text-base">{selectedConv.student}</CardTitle>
                       <CardDescription className="text-sm">
                         <span className="flex items-center text-green-500">
                           <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
@@ -173,7 +193,7 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
                 </div>
               </CardHeader>
               
-              <ScrollArea className="flex-1 p-4">
+              <div className="flex-1 overflow-auto p-4">
                 <div className="space-y-4">
                   {selectedConv.messages.map((message) => (
                     <div
@@ -192,46 +212,42 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
                         )}
                       >
                         <p className="text-sm">{message.content}</p>
-                        <p className={cn(
-                          "text-xs mt-1 text-right",
-                          message.sender === 'trainer' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                        )}>
+                        <p className="text-xs opacity-80 mt-1 text-right">
                           {message.timestamp}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </ScrollArea>
-              
-              <div className="p-4 border-t">
-                <div className="flex gap-2">
+              </div>
+              <div className="border-t p-3 bg-background">
+                <div className="flex items-center gap-2">
                   <Input
-                    placeholder="Digite sua mensagem..."
+                    placeholder="Digite uma mensagem..."
+                    className="flex-1 rounded-full border-gray-200 focus-visible:ring-1 focus-visible:ring-ring"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                    className="flex-1 h-10 rounded-lg"
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                   />
                   <Button
-                    onClick={handleSendMessage}
                     size="icon"
-                    className="h-10 w-10 rounded-lg"
+                    className="rounded-full h-10 w-10 bg-primary hover:bg-primary/90"
+                    onClick={handleSendMessage}
                     disabled={!newMessage.trim()}
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </Card>
           ) : (
-            <Card className="lg:col-span-3 border-0 shadow-sm h-full flex flex-col items-center justify-center">
-              <div className="text-center p-8">
-                <MessageCircle className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Nenhuma conversa selecionada</h3>
-                <p className="text-muted-foreground">Selecione um aluno para começar a conversar</p>
-              </div>
-            </Card>
+            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+              <MessageCircle className="w-12 h-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Nenhuma conversa selecionada</h3>
+              <p className="text-sm text-muted-foreground">
+                Selecione uma conversa para começar a enviar mensagens
+              </p>
+            </div>
           )}
         </div>
       </div>

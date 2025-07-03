@@ -113,7 +113,7 @@ export function RecentEvaluations({ onBack }: RecentEvaluationsProps) {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-2 sm:p-4 md:p-6 max-w-4xl mx-auto w-full">
       <div className="flex items-center mb-6">
         <Button
           variant="ghost"
@@ -130,7 +130,7 @@ export function RecentEvaluations({ onBack }: RecentEvaluationsProps) {
       </div>
 
       {/* Filter/Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
         <Card className="border-0 shadow-sm bg-blue-50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -179,7 +179,7 @@ export function RecentEvaluations({ onBack }: RecentEvaluationsProps) {
       </div>
 
       {/* Evaluations List */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {evaluations.map((evaluation) => {
           const isJustResponded = respondedEvaluations.includes(evaluation.id);
           const hasResponse = evaluation.responded || isJustResponded;

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   ArrowLeft, 
   Search, 
@@ -14,10 +15,31 @@ import {
   Target,
   Play,
   Edit,
-  Trash2
+  Trash2,
+  ChevronDown,
+  Check
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ExerciseModal } from "./ExerciseModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
+
+interface Exercise {
+  id: number;
+  name: string;
+  category: string;
+  muscleGroup: string;
+  equipment: string;
+  difficulty: string;
+  description: string;
+  videoUrl: string;
+}
 
 interface ExerciseLibraryProps {
   onBack: () => void;
@@ -114,7 +136,9 @@ export function ExerciseLibrary({ onBack }: ExerciseLibraryProps) {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedDifficulty, setSelectedDifficulty] = useState("Todos");
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
-  const [editingExercise, setEditingExercise] = useState(null);
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isDifficultyOpen, setIsDifficultyOpen] = useState(false);
   const { toast } = useToast();
 
   const filteredExercises = mockExercises.filter(exercise => {
@@ -155,12 +179,12 @@ export function ExerciseLibrary({ onBack }: ExerciseLibraryProps) {
     });
   };
 
-  const handleEditExercise = (exercise: any) => {
+  const handleEditExercise = (exercise: Exercise) => {
     setEditingExercise(exercise);
     setIsExerciseModalOpen(true);
   };
 
-  const handleDeleteExercise = (exercise: any) => {
+  const handleDeleteExercise = (exercise: Exercise) => {
     toast({
       title: "Exercício removido",
       description: `${exercise.name} foi removido da biblioteca.`,
@@ -168,7 +192,7 @@ export function ExerciseLibrary({ onBack }: ExerciseLibraryProps) {
     });
   };
 
-  const handleSaveExercise = (exerciseData: any) => {
+  const handleSaveExercise = (exerciseData: Omit<Exercise, 'id'>) => {
     console.log("Salvando exercício:", exerciseData);
     setEditingExercise(null);
   };
@@ -180,77 +204,127 @@ export function ExerciseLibrary({ onBack }: ExerciseLibraryProps) {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="mr-4 hover:bg-slate-100 rounded-xl"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-slate-800">Biblioteca de Exercícios</h1>
-          <p className="text-slate-600 mt-1">Gerencie sua coleção de exercícios com vídeos demonstrativos</p>
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="mt-1 hover:bg-slate-100 rounded-xl"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800">Biblioteca de Exercícios</h1>
+            <p className="text-slate-600 mt-1">Gerencie sua coleção de exercícios com vídeos demonstrativos</p>
+          </div>
         </div>
-        <Button 
-          onClick={() => setIsExerciseModalOpen(true)}
-          className="bg-gradient-to-r from-indigo-900 to-purple-800 hover:from-indigo-800 hover:to-purple-700 rounded-xl"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Exercício
-        </Button>
+        <div className="relative mt-1">
+          <Button 
+            onClick={() => setIsExerciseModalOpen(true)}
+            size="icon"
+            className="h-10 w-10 rounded-full bg-gradient-to-r from-indigo-900 to-purple-800 hover:from-indigo-800 hover:to-purple-700 text-white relative group"
+            title="Adicionar novo exercício"
+          >
+            <Dumbbell className="h-4 w-4 transition-transform group-hover:scale-110" />
+            <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-white flex items-center justify-center shadow-sm">
+              <Plus className="h-2.5 w-2.5 text-indigo-900" />
+            </div>
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filters */}
       <Card className="border-0 shadow-lg mb-8">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-1">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Buscar</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Buscar exercícios..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 rounded-xl border-slate-200"
-                />
-              </div>
+        <CardContent className="p-6 space-y-4">
+          {/* Barra de busca - Largura total */}
+          <div className="w-full">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Buscar exercícios</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Digite o nome do exercício..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 rounded-xl border-slate-200 w-full"
+              />
             </div>
-            
+          </div>
+          
+          {/* Filtros - Lado a lado abaixo da busca */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Filtro de Categoria */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Categoria</label>
-              <div className="flex gap-2 overflow-x-auto">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(category)}
-                    className="whitespace-nowrap rounded-xl"
+              <DropdownMenu onOpenChange={setIsCategoryOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between rounded-xl"
+                    aria-expanded={isCategoryOpen}
                   >
-                    {category}
+                    {selectedCategory}
+                    <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
                   </Button>
-                ))}
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full min-w-[var(--radix-dropdown-menu-trigger-width)] max-h-60 overflow-y-auto" align="start">
+                  <DropdownMenuLabel className="flex items-center justify-between">
+                    <span>Categorias</span>
+                    <Filter className="h-4 w-4 text-slate-500" />
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {categories.map((category) => (
+                    <DropdownMenuCheckboxItem
+                      key={category}
+                      checked={selectedCategory === category}
+                      onCheckedChange={() => setSelectedCategory(category)}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="flex-1">{category}</span>
+                        {selectedCategory === category && <Check className="h-4 w-4 text-indigo-600" />}
+                      </div>
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
+            {/* Filtro de Dificuldade */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Dificuldade</label>
-              <div className="flex gap-2 overflow-x-auto">
-                {difficulties.map((difficulty) => (
-                  <Button
-                    key={difficulty}
-                    variant={selectedDifficulty === difficulty ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedDifficulty(difficulty)}
-                    className="whitespace-nowrap rounded-xl"
+              <DropdownMenu onOpenChange={setIsDifficultyOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between rounded-xl"
+                    aria-expanded={isDifficultyOpen}
                   >
-                    {difficulty}
+                    {selectedDifficulty}
+                    <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${isDifficultyOpen ? 'rotate-180' : ''}`} />
                   </Button>
-                ))}
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full min-w-[var(--radix-dropdown-menu-trigger-width)]" align="start">
+                  <DropdownMenuLabel className="flex items-center justify-between">
+                    <span>Nível</span>
+                    <Zap className="h-4 w-4 text-slate-500" />
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {difficulties.map((difficulty) => (
+                    <DropdownMenuCheckboxItem
+                      key={difficulty}
+                      checked={selectedDifficulty === difficulty}
+                      onCheckedChange={() => setSelectedDifficulty(difficulty)}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="flex-1">{difficulty}</span>
+                        {selectedDifficulty === difficulty && <Check className="h-4 w-4 text-indigo-600" />}
+                      </div>
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardContent>
@@ -354,8 +428,8 @@ export function ExerciseLibrary({ onBack }: ExerciseLibraryProps) {
       <ExerciseModal
         isOpen={isExerciseModalOpen}
         onClose={handleCloseModal}
-        exercise={editingExercise}
         onSave={handleSaveExercise}
+        exercise={editingExercise || undefined}
       />
     </div>
   );

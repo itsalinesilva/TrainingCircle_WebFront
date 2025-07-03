@@ -1,31 +1,98 @@
 import { createBrowserRouter, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Login from "@/pages/auth/Login";
+import { EvaluateWorkout as StudentEvaluateWorkout } from "@/components/student/EvaluateWorkout";
 import NotFound from "@/pages/NotFound";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Student Pages
 import StudentDashboard from "@/pages/student/Dashboard";
 import StudentWorkouts from "@/pages/student/Workouts";
-import { Progress as StudentProgress } from "@/components/student/Progress";
-import { Messages as StudentMessages } from "@/components/student/Messages";
-import Profile from "@/components/student/Profile";
 import StudentLiveEvent from "@/components/student/LiveEvent";
-import { EvaluateWorkout } from "@/components/student/EvaluateWorkout";
+import Profile from "@/pages/student/Profile";
 
 // Trainer Pages
 import { TrainerDashboard } from "@/components/trainerSection/TrainerDashboard";
 import TrainerStudents from "@/pages/trainer/Students";
 import StudentProfilePage from "@/pages/trainer/StudentProfilePage";
 import CreateWorkoutPage from "@/pages/trainer/CreateWorkoutPage";
-import { ExerciseLibrary as TrainerExerciseLibrary } from "@/components/trainerSection/ExerciseLibrary";
-import { StudentProfile } from "@/components/trainerSection/StudentProfile";
+import { ExerciseLibraryPage } from "@/pages/trainer/ExerciseLibraryPage";
+
+// Components
+import { Progress as StudentProgress } from "@/components/student/Progress";
+import { Messages as StudentMessages } from "@/components/student/Messages";
 import { TrainerMessages } from "@/components/trainerSection/TrainerMessages";
 import { TrainerLiveEvent } from "@/components/trainerSection/TrainerLiveEvent";
-import { TrainerEvaluations } from "../pages/trainer/Evaluations";
+import { StudentProfile } from "@/components/trainerSection/StudentProfile";
+import { ExerciseLibrary } from "@/components/trainerSection/ExerciseLibrary";
+import { TrainerEvaluations } from "@/pages/trainer/Evaluations";
 import { User } from "@/types/user";
+import { UserProfile } from "@/components/userSection/UserProfile";
+
+// Wrapper components
+type WrapperProps = {
+  children: React.ReactNode;
+};
+
+const withAuth = <P extends object>(
+  WrappedComponent: React.ComponentType<P>,
+  requiredRole?: 'student' | 'trainer'
+) => {
+  const AuthenticatedComponent: FC<P> = (props) => {
+    const { user } = useAuth();
+
+    if (!user) {
+      return <div>Carregando...</div>;
+    }
+
+    if (requiredRole && user.type !== requiredRole) {
+      return <div>Acesso não autorizado</div>;
+    }
+
+    return <WrappedComponent {...props as P} />;
+  };
+
+  return AuthenticatedComponent;
+};
+
+// Wrapper for EvaluateWorkout
+const EvaluateWorkoutWrapper = withAuth(({ onBack }: { onBack: () => void }) => {
+  const { user } = useAuth();
+  
+  return (
+    <StudentEvaluateWorkout 
+      user={user!} 
+      workout={null} 
+      onBack={onBack} 
+    />
+  );
+});
+
+// Wrapper for TrainerDashboard
+const TrainerDashboardWrapper = withAuth(() => {
+  const { user } = useAuth();
+  
+  return (
+    <TrainerDashboard 
+      user={user!}
+      onViewChange={(view: string) => {
+        // Aqui você pode adicionar lógica adicional se necessário
+        console.log('View changed to:', view);
+      }}
+    />
+  );
+}, 'trainer');
+
+// Wrapper for ExerciseLibrary
+const ExerciseLibraryWrapper = withAuth(() => {
+  return (
+    <div className="p-6">
+      <ExerciseLibrary onBack={() => window.history.back()} />
+    </div>
+  );
+}, 'trainer');
 
 // Página de redirecionamento após login
 function RedirectToDashboard() {
@@ -85,15 +152,24 @@ export const router = createBrowserRouter([
       },
       {
         path: "live",
-        element: <StudentLiveEvent onBack={() => window.history.back()} />,
+        element: <StudentLiveEvent onBack={() => window.history.back()} />
       },
       {
         path: "profile",
-        element: <Profile />,
+        element: <UserProfile 
+          user={{ 
+            id: '1',
+            name: 'Current User',
+            email: 'student@example.com',
+            type: 'student',
+            personalTrainer: 'Trainer Name'
+          }} 
+          onBack={() => window.history.back()} 
+        />
       },
       {
         path: "evaluate-workout",
-        element: <EvaluateWorkout onBack={() => window.history.back()} />,
+        element: <EvaluateWorkoutWrapper onBack={() => window.history.back()} />,
       },
     ],
   },
@@ -106,6 +182,10 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
+      {
+        index: true,
+        element: <TrainerDashboardWrapper />,
+      },
       {
         path: "dashboard",
         element: <TrainerDashboardWrapper />,
@@ -123,8 +203,8 @@ export const router = createBrowserRouter([
         element: <CreateWorkoutPage />,
       },
       {
-        path: "exercises",
-        element: <TrainerExerciseLibrary onBack={() => window.history.back()} />,
+        path: "exercise-library",
+        element: <ExerciseLibraryWrapper />,
       },
       {
         path: "messages",
@@ -132,18 +212,28 @@ export const router = createBrowserRouter([
       },
       {
         path: "live",
-        element: (
-          <TrainerLiveEvent 
-            user={{ id: '1', name: 'Trainer', type: 'trainer' } as User}
-            onBack={() => window.history.back()}
-            onViewChange={() => {}}
-          />
-        ),
+        element: <TrainerLiveEvent 
+          user={{ id: '1', name: 'Trainer', type: 'trainer' } as User}
+          onBack={() => window.history.back()}
+          onViewChange={() => {}}
+        />,
       },
       {
         path: "evaluations",
-        element: <TrainerEvaluations />,
+        element: <TrainerEvaluations />
       },
+      {
+        path: "profile",
+        element: <UserProfile 
+          user={{ 
+            name: 'Personal Trainer', 
+            email: 'personal@example.com',
+            personalTrainer: 'N/A',
+            type: 'trainer'
+          }} 
+          onBack={() => window.history.back()} 
+        />
+      }
     ],
   },
     // Rota de fallback para páginas não encontradas
@@ -153,8 +243,6 @@ export const router = createBrowserRouter([
     },
 ]);
 
-// Wrapper para o TrainerDashboard que acessa o contexto de autenticação
-function TrainerDashboardWrapper() {
-  const { user } = useAuth();
-  return <TrainerDashboard user={user} onViewChange={(view) => {}} />;
-}
+
+
+

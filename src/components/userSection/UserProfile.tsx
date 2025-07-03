@@ -39,13 +39,15 @@ export function UserProfile({ user, onBack }: UserProfileProps) {
         <CardContent className="space-y-6">
           <div className="bg-slate-50 rounded-xl p-4">
             <h3 className="font-semibold text-slate-800 mb-2">Tipo de Usuário</h3>
-            <p className="text-slate-600">Aluno</p>
+            <p className="text-slate-600">{user.type === 'trainer' ? 'Personal Trainer' : 'Aluno'}</p>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-4">
-            <h3 className="font-semibold text-slate-800 mb-2">Personal Trainer</h3>
-            <p className="text-slate-600">{user.personalTrainer}</p>
-          </div>
+          {user.type !== 'trainer' && (
+            <div className="bg-slate-50 rounded-xl p-4">
+              <h3 className="font-semibold text-slate-800 mb-2">Personal Trainer</h3>
+              <p className="text-slate-600">{user.personalTrainer || 'Não atribuído'}</p>
+            </div>
+          )}
 
           <div className="space-y-3 pt-4">
             <Button 

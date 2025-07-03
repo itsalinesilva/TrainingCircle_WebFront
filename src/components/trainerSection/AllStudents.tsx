@@ -89,13 +89,23 @@ export function AllStudents({ onBack, onViewChange }: AllStudentsProps) {
           <h1 className="text-3xl font-bold text-slate-800">Meus Alunos</h1>
           <p className="text-slate-600 mt-1">Gerencie todos os seus alunos</p>
         </div>
-        <Button
-          onClick={() => onViewChange("add-student")}
-          className="bg-gradient-to-r from-indigo-900 to-purple-800 hover:from-indigo-800 hover:to-purple-700 rounded-xl"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Novo Aluno
-        </Button>
+        <div className="relative group">
+          <Button
+            onClick={() => onViewChange("add-student")}
+            variant="ghost"
+            size="icon"
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-900 to-purple-800 hover:from-indigo-800 hover:to-purple-700 text-white"
+            aria-label="Adicionar Novo Aluno"
+          >
+            <div className="relative">
+              <Users className="w-5 h-5" />
+              <Plus className="absolute -top-1 -right-2 w-3 h-3 text-white" />
+            </div>
+          </Button>
+          <div className="absolute right-0 mt-1 w-40 bg-slate-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            Adicionar Novo Aluno
+          </div>
+        </div>
       </div>
 
       {/* Search and Stats */}

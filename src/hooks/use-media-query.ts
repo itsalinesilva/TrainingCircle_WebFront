@@ -4,23 +4,39 @@ export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {
+    console.log('=== useMediaQuery inicializado ===');
+    console.log('Query:', query);
+    
     const media = window.matchMedia(query);
     
-    if (media.matches !== matches) {
+    const updateMatches = () => {
+      console.log('Atualizando matches para:', media.matches, 'Query:', query);
       setMatches(media.matches);
+    };
+    
+    // Atualiza o estado inicial
+    if (media.matches !== matches) {
+      updateMatches();
     }
     
-    const listener = () => setMatches(media.matches);
+    const listener = (e: MediaQueryListEvent) => {
+      console.log('Mudança detectada no media query:', e.media, 'matches:', e.matches);
+      updateMatches();
+    };
     
     // Adiciona o listener
     media.addEventListener('change', listener);
     
-    // Atualiza o estado inicial
-    setMatches(media.matches);
+    // Verificação inicial
+    console.log('Verificação inicial - Largura:', window.innerWidth, 'matches:', media.matches);
     
     // Remove o listener quando o componente for desmontado
-    return () => media.removeEventListener('change', listener);
-  }, [matches, query]);
+    return () => {
+      console.log('Removendo listener do useMediaQuery');
+      media.removeEventListener('change', listener);
+    };
+  }, [query]);
 
+  console.log('useMediaQuery retornando:', matches, 'para query:', query);
   return matches;
 }
