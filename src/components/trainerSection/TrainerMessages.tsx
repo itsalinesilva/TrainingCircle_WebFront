@@ -73,7 +73,7 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
   const selectedConv = mockConversations.find(conv => conv.id === selectedConversation);
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Button
@@ -95,90 +95,74 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
         </Button>
       </div>
 
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-180px)] gap-4">
+      <div className="flex h-[calc(100vh-160px)] w-full overflow-hidden">
         {/* Lista de Alunos */}
-        <Card className={cn(
-          "lg:w-1/3 xl:w-1/4 border-0 lg:border-r rounded-none shadow-sm overflow-hidden flex flex-col h-full",
-          selectedConversation && "hidden lg:flex"
-        )}>
-          <CardHeader className="p-3 border-b">
+        <div className="w-full lg:w-1/4 flex flex-col border-r">
+          <div className="p-3 border-b sticky top-0 bg-background z-10">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar alunos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 rounded-lg"
+                className="pl-10 h-10 rounded-lg w-full"
               />
             </div>
-          </CardHeader>
-          <ScrollArea className="flex-1">
-            <div className="divide-y">
-              {filteredConversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setSelectedConversation(conversation.id)}
-                  className={cn(
-                    "px-4 py-3 cursor-pointer transition-colors hover:bg-accent/50",
-                    selectedConversation === conversation.id && "bg-accent"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 flex-shrink-0">
-                      <AvatarFallback className="bg-gradient-to-br from-indigo-900 to-purple-900 text-white">
-                        {conversation.avatar}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm truncate pr-2">{conversation.student}</p>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {conversation.timestamp}
-                          </span>
-                          {conversation.unread > 0 && (
-                            <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs flex-shrink-0">
-                              {conversation.unread}
-                            </span>
-                          )}
-                        </div>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {filteredConversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                onClick={() => setSelectedConversation(conversation.id)}
+                className={cn(
+                  "w-full p-3 cursor-pointer transition-colors hover:bg-accent/50 flex items-center border-b",
+                  selectedConversation === conversation.id && "bg-accent"
+                )}
+              >
+                <Avatar className="h-10 w-10 border-2 border-background flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-indigo-900 to-purple-900 text-white">
+                    {conversation.avatar}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="ml-3 flex-1 min-w-0">
+                  <div className="flex justify-between items-center w-full">
+                    <p className="font-medium text-sm truncate pr-2">
+                      {conversation.student}
+                    </p>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {conversation.timestamp}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center w-full">
+                    <p className="text-sm text-muted-foreground truncate pr-2">
+                      {conversation.lastMessage}
+                    </p>
+                    {conversation.unread > 0 && (
+                      <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs flex-shrink-0">
+                        {conversation.unread}
                       </div>
-                      <p className="text-sm text-muted-foreground truncate mt-0.5">
-                        {conversation.lastMessage}
-                      </p>
-                    </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </Card>
-
+              </div>
+            ))}
+          </div>
+        </div>
+        
         {/* Área de Conversa */}
-        <div className={cn(
-          "flex-1 h-full flex flex-col",
-          !selectedConversation && "hidden lg:flex"
-        )}>
+        <div className="hidden lg:flex lg:flex-1 flex-col">
           {selectedConv ? (
-            <Card className="border-0 shadow-sm h-full flex flex-col">
-              <CardHeader className="border-b py-3 px-4 bg-muted/20">
+            <Card className="border-0 shadow-sm flex flex-col h-full">
+              <CardHeader className="border-b p-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="lg:hidden mr-1"
-                      onClick={() => setSelectedConversation(null)}
-                    >
-                      <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                    <Avatar className="h-10 w-10">
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <Avatar className="h-10 w-10 border-2 border-background">
                       <AvatarFallback className="bg-gradient-to-br from-indigo-900 to-purple-900 text-white">
                         {selectedConv.avatar}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <CardTitle className="text-base">{selectedConv.student}</CardTitle>
+                      <CardTitle className="text-lg">{selectedConv.student}</CardTitle>
                       <CardDescription className="text-sm">
                         <span className="flex items-center text-green-500">
                           <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
@@ -193,7 +177,7 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
                 </div>
               </CardHeader>
               
-              <div className="flex-1 overflow-auto p-4">
+              <ScrollArea className="flex-1 p-3 sm:p-4">
                 <div className="space-y-4">
                   {selectedConv.messages.map((message) => (
                     <div
@@ -212,42 +196,46 @@ export function TrainerMessages({ onBack }: TrainerMessagesProps) {
                         )}
                       >
                         <p className="text-sm">{message.content}</p>
-                        <p className="text-xs opacity-80 mt-1 text-right">
+                        <p className={cn(
+                          "text-xs mt-1 text-right",
+                          message.sender === 'trainer' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        )}>
                           {message.timestamp}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-              <div className="border-t p-3 bg-background">
-                <div className="flex items-center gap-2">
+              </ScrollArea>
+              
+              <div className="p-4 border-t">
+                <div className="flex gap-2">
                   <Input
-                    placeholder="Digite uma mensagem..."
-                    className="flex-1 rounded-full border-gray-200 focus-visible:ring-1 focus-visible:ring-ring"
+                    placeholder="Digite sua mensagem..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    className="flex-1 h-10 rounded-lg"
                   />
                   <Button
-                    size="icon"
-                    className="rounded-full h-10 w-10 bg-primary hover:bg-primary/90"
                     onClick={handleSendMessage}
+                    size="icon"
+                    className="h-10 w-10 rounded-lg"
                     disabled={!newMessage.trim()}
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             </Card>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center p-8">
-              <MessageCircle className="w-12 h-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhuma conversa selecionada</h3>
-              <p className="text-sm text-muted-foreground">
-                Selecione uma conversa para começar a enviar mensagens
-              </p>
-            </div>
+            <Card className="lg:col-span-3 border-0 shadow-sm h-full flex flex-col items-center justify-center">
+              <div className="text-center p-8">
+                <MessageCircle className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Nenhuma conversa selecionada</h3>
+                <p className="text-muted-foreground">Selecione um aluno para começar a conversar</p>
+              </div>
+            </Card>
           )}
         </div>
       </div>

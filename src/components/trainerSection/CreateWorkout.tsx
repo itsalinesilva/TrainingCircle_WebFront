@@ -122,23 +122,14 @@ export function CreateWorkout({ onBack }: CreateWorkoutProps) {
             {isEditMode ? "Modifique um treino existente" : "Monte um novo treino para seus alunos"}
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button
-            onClick={handleAssignWorkout}
-            variant="outline"
-            className="rounded-xl border-indigo-200 text-indigo-900 hover:bg-indigo-50"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Atribuir a Aluno(s)
-          </Button>
-          <Button
-            onClick={handleSaveWorkout}
-            className="bg-gradient-to-r from-indigo-900 to-purple-800 hover:from-indigo-800 hover:to-purple-700 rounded-xl"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isEditMode ? "Atualizar Treino" : "Salvar Treino"}
-          </Button>
-        </div>
+        <Button
+          onClick={handleSaveWorkout}
+          size="icon"
+          className="bg-gradient-to-r from-indigo-900 to-purple-800 hover:from-indigo-800 hover:to-purple-700 rounded-xl"
+          title={isEditMode ? "Atualizar Treino" : "Salvar Treino"}
+        >
+          <Save className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* Workout Info */}
@@ -166,9 +157,19 @@ export function CreateWorkout({ onBack }: CreateWorkoutProps) {
               placeholder="Descreva o objetivo e características do treino..."
               value={workoutDescription}
               onChange={(e) => setWorkoutDescription(e.target.value)}
-              className="rounded-xl border-slate-200 focus:border-indigo-300 focus:ring-indigo-300"
+              className="rounded-xl border-slate-200 focus:border-indigo-300 focus:ring-indigo-300 mb-4"
               rows={3}
             />
+            <div className="flex justify-end">
+              <Button
+                onClick={handleAssignWorkout}
+                variant="outline"
+                className="rounded-xl border-indigo-200 text-indigo-900 hover:bg-indigo-50"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Atribuir a Aluno(s)
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
