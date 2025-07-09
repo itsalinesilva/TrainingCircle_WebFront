@@ -14,7 +14,7 @@ interface AppSidebarProps {
 }
 
 const studentMenuItems: MenuItem[] = [
-  { title: "Dashboard", icon: Home, path: "/dashboard", view: "dashboard" },
+  { title: "Painel", icon: Home, path: "/dashboard", view: "dashboard" },
   { title: "Meus Treinos", icon: Dumbbell, path: "/workouts", view: "my-workouts" },
   { title: "Meu Progresso", icon: TrendingUp, path: "/progress", view: "progress" },
   { title: "Avaliar Treino", icon: Star, path: "/evaluate-workout", view: "evaluate-workout" },
@@ -24,7 +24,7 @@ const studentMenuItems: MenuItem[] = [
 ];
 
 const trainerMenuItems: MenuItem[] = [
-  { title: "Dashboard", icon: Home, path: "/dashboard", view: "dashboard" },
+  { title: "Painel", icon: Home, path: "/dashboard", view: "dashboard" },
   { title: "Alunos", icon: Users, path: "/students", view: "all-students" },
   { title: "Criar Treino", icon: Plus, path: "/create-workout", view: "create-workout" },
   { title: "Biblioteca de Exercícios", icon: Library, path: "/exercise-library", view: "exercise-library" },

@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Star, Send, MessageSquare, Clock } from "lucide-react";
+import { ArrowLeft, Send, MessageSquare, Clock, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Slider } from "@/components/ui/slider";
 
 interface User {
   id: string;
@@ -59,13 +60,57 @@ const feedbackHistory = [
 
 export function EvaluateWorkout({ onBack }: EvaluateWorkoutProps) {
   const [selectedWorkout, setSelectedWorkout] = useState<number | null>(null);
-  const [rating, setRating] = useState<number>(0);
+  const [pseLevel, setPseLevel] = useState<number>(5);
   const [feedback, setFeedback] = useState("");
   const { toast } = useToast();
 
-  const handleRatingClick = (star: number) => {
-    setRating(star);
+  // Níveis PSE com cores e descrições atualizadas
+  const pseLevels = [
+    { level: 1, color: 'bg-blue-200', intensity: 'Muito leve', description: 'Esforço mínimo, muito fácil de realizar' },
+    { level: 2, color: 'bg-blue-400', intensity: 'Leve', description: 'Esforço muito leve, fácil de manter' },
+    { level: 3, color: 'bg-blue-400', intensity: 'Leve', description: 'Esforço leve, confortável' },
+    { level: 4, color: 'bg-green-500', intensity: 'Moderada', description: 'Esforço moderado, começa a desafiar' },
+    { level: 5, color: 'bg-green-500', intensity: 'Moderada', description: 'Esforço moderado, respiração mais ofegante' },
+    { level: 6, color: 'bg-green-500', intensity: 'Moderada', description: 'Esforço moderado, desafiador' },
+    { level: 7, color: 'bg-yellow-400', intensity: 'Vigoroso', description: 'Esforço forte, respiração ofegante' },
+    { level: 8, color: 'bg-yellow-400', intensity: 'Vigoroso', description: 'Esforço muito forte, próximo ao limite' },
+    { level: 9, color: 'bg-orange-500', intensity: 'Difícil', description: 'Esforço intenso, muito desafiador' },
+    { level: 10, color: 'bg-red-600', intensity: 'Máximo', description: 'Esforço máximo, exaustão total' }
+  ];
+  
+  // Função para obter a cor baseada no nível
+  const getColorForLevel = (level: number) => {
+    if (level === 1) return 'bg-blue-200';
+    if (level === 2 || level === 3) return 'bg-blue-400';  // Mesmo azul para níveis 2 e 3
+    if (level >= 4 && level <= 6) return 'bg-green-500';    // Mesmo verde para níveis 4-6
+    if (level === 7 || level === 8) return 'bg-yellow-400'; // Mesmo amarelo para níveis 7-8
+    if (level === 9) return 'bg-orange-500';
+    return 'bg-red-600';  // Nível 10
   };
+  
+  // Função para obter a faixa de intensidade
+  const getIntensityRange = (level: number) => {
+    if (level === 1) return '1 Muito leve';
+    if (level === 2) return '2 Leve';
+    if (level === 3) return '3 Azul leve';
+    if (level >= 4 && level <= 6) return `${level} Moderada`;
+    if (level === 7 || level === 8) return `${level} Vigoroso`;
+    if (level === 9) return '9 Difícil';
+    return '10 Máximo';
+  };
+  
+  // Função para obter a cor da faixa
+  const getRangeColor = (level: number) => {
+    if (level === 1) return 'bg-blue-100 text-blue-800';
+    if (level === 2 || level === 3) return 'bg-blue-200 text-blue-900';  // Mesmo azul para níveis 2 e 3
+    if (level >= 4 && level <= 6) return 'bg-green-200 text-green-900';  // Mesmo verde para níveis 4-6
+    if (level === 7 || level === 8) return 'bg-yellow-100 text-yellow-900'; // Mesmo amarelo para níveis 7-8
+    if (level === 9) return 'bg-orange-100 text-orange-900';
+    return 'bg-red-100 text-red-900';
+  };
+
+  // Função auxiliar para obter o nível PSE atual
+  const getCurrentPse = (level: number) => pseLevels[level - 1] || pseLevels[0];
 
   const handleSubmitEvaluation = () => {
     if (!selectedWorkout) {
@@ -77,10 +122,10 @@ export function EvaluateWorkout({ onBack }: EvaluateWorkoutProps) {
       return;
     }
 
-    if (rating === 0) {
+    if (pseLevel < 1 || pseLevel > 10) {
       toast({
         title: "Avaliação necessária",
-        description: "Por favor, dê uma nota de 1 a 5 estrelas.",
+        description: "Por favor, selecione um nível de esforço de 1 a 10.",
         variant: "destructive",
       });
       return;
@@ -92,7 +137,7 @@ export function EvaluateWorkout({ onBack }: EvaluateWorkoutProps) {
     });
 
     setSelectedWorkout(null);
-    setRating(0);
+    setPseLevel(5);
     setFeedback("");
   };
 
@@ -149,38 +194,53 @@ export function EvaluateWorkout({ onBack }: EvaluateWorkoutProps) {
         </CardContent>
       </Card>
 
-      {/* Rating Section */}
+      {/* PSE Rating Section */}
       {selectedWorkout && (
         <Card className="border-0 shadow-lg mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Como foi o treino?</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Activity className="w-5 h-5 text-indigo-700" />
+              Percepção subjetiva de esforço (PSE)
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center mb-6">
-              <div className="flex justify-center gap-2 mb-4">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => handleRatingClick(star)}
-                    className={`transition-colors ${
-                      star <= rating
-                        ? 'text-yellow-400'
-                        : 'text-slate-300 hover:text-yellow-200'
-                    }`}
-                  >
-                    <Star className="w-8 h-8 fill-current" />
-                  </button>
-                ))}
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="mb-6 text-center">
+                  <div className="text-3xl font-bold mb-2">{pseLevel}<span className="text-lg text-slate-500">/10</span></div>
+                  <div className={`text-sm font-medium px-3 py-1 rounded-full inline-block ${getRangeColor(pseLevel)}`}>
+                    {getIntensityRange(pseLevel)}
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <p className="text-lg font-medium text-center mb-1">
+                    {getCurrentPse(pseLevel).intensity}
+                  </p>
+                  <p className="text-sm text-slate-600 text-center">
+                    {getCurrentPse(pseLevel).description}
+                  </p>
+                </div>
+                
+                <div className="mb-6 px-2">
+                  {/* Barra de cores clicável */}
+                  <div className="flex justify-between cursor-pointer">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
+                      <div 
+                        key={level}
+                        onClick={() => setPseLevel(level)}
+                        className={`h-10 flex-1 flex items-center justify-center text-xs font-medium transition-all ${
+                          level <= pseLevel 
+                            ? getColorForLevel(level) + ' text-white'
+                            : 'bg-slate-200 text-slate-400'
+                        } ${level === 1 ? 'rounded-l-full' : ''} ${level === 10 ? 'rounded-r-full' : ''}`}
+                      >
+                        {level}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              {rating > 0 && (
-                <p className="text-sm text-slate-600">
-                  {rating === 1 && "Muito difícil"}
-                  {rating === 2 && "Difícil"}
-                  {rating === 3 && "Adequado"}
-                  {rating === 4 && "Bom"}
-                  {rating === 5 && "Excelente"}
-                </p>
-              )}
             </div>
 
             <div>
@@ -199,15 +259,15 @@ export function EvaluateWorkout({ onBack }: EvaluateWorkoutProps) {
       )}
 
       {/* Submit Button */}
-      {selectedWorkout && rating > 0 && (
+      {selectedWorkout && pseLevel > 0 && (
         <div className="flex justify-center mb-8">
-          <Button
-            onClick={handleSubmitEvaluation}
-            className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-900 to-purple-800 hover:from-indigo-800 hover:to-purple-700"
-          >
-            <Send className="w-4 h-4 mr-2" />
-            Enviar Avaliação
-          </Button>
+              <Button
+                onClick={handleSubmitEvaluation}
+                className="w-full bg-indigo-900 hover:bg-indigo-800 text-white py-6 text-base shadow-md hover:shadow-lg transition-all"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Enviar Nível de Esforço
+              </Button>
         </div>
       )}
 
@@ -230,16 +290,17 @@ export function EvaluateWorkout({ onBack }: EvaluateWorkoutProps) {
                       {new Date(item.date).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-4 h-4 ${
-                            star <= item.rating ? 'text-yellow-400 fill-current' : 'text-slate-300'
-                          }`}
-                        />
-                      ))}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium mr-1">PSE:</span>
+                      <div className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        item.rating <= 3 ? 'bg-blue-100 text-blue-800' :
+                        item.rating <= 6 ? 'bg-green-100 text-green-800' :
+                        item.rating <= 8 ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {item.rating}/10
+                      </div>
                     </div>
                     <div className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
                       item.status === 'Respondido' 

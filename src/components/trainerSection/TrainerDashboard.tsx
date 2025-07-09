@@ -37,7 +37,6 @@ interface TrainerDashboardProps {
 export function TrainerDashboard({ user, onViewChange }: TrainerDashboardProps) {
   const quickStats = [
     { label: "Total de Alunos", value: "15", icon: Users, color: "bg-blue-50 text-blue-900" },
-    { label: "Alunos Ativos", value: "12", icon: TrendingUp, color: "bg-green-50 text-green-900" },
     { label: "Treinos Criados", value: "23", icon: Dumbbell, color: "bg-purple-50 text-purple-900" },
     { label: "Mensagens", value: "5", icon: MessageCircle, color: "bg-orange-50 text-orange-900" }
   ];
@@ -107,39 +106,24 @@ export function TrainerDashboard({ user, onViewChange }: TrainerDashboardProps) 
       </div>
 
       {/* Card de Métricas do Dia */}
-      <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-indigo-900 to-purple-800 text-white">
-        <CardHeader>
+      <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-indigo-900 to-purple-800 text-white w-full">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl mb-1">Visão Geral do Dia</CardTitle>
-              <CardDescription className="text-indigo-100">
+              <CardTitle className="text-xl">Visão Geral do Dia</CardTitle>
+              <CardDescription className="text-indigo-100 mt-1">
                 Resumo das suas atividades de hoje
               </CardDescription>
             </div>
-            <BarChart2 className="w-8 h-8 text-indigo-200" />
+            <BarChart2 className="w-7 h-7 text-indigo-200" />
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Treinos Finalizados */}
-            <div className="bg-white/10 p-4 rounded-xl">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-indigo-100">Treinos Finalizados</span>
-                <CheckCircle2 className="w-5 h-5 text-green-300" />
-              </div>
-              <div className="flex items-end justify-between">
-                <span className="text-2xl font-bold">{todayMetrics.completedWorkouts}</span>
-                <span className="text-xs flex items-center text-green-300">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  12%
-                </span>
-              </div>
-            </div>
-
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-2 gap-4 w-full">
             {/* Próximos Treinos */}
             <div className="bg-white/10 p-4 rounded-xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-indigo-100">Próximos Treinos</span>
+                <span className="text-sm font-medium text-indigo-100">Próximos Treinos</span>
                 <Clock className="w-5 h-5 text-amber-300" />
               </div>
               <div className="flex items-end justify-between">
@@ -151,32 +135,17 @@ export function TrainerDashboard({ user, onViewChange }: TrainerDashboardProps) 
               </div>
             </div>
 
-            {/* Alunos Ativos */}
+            {/* Treinos Finalizados */}
             <div className="bg-white/10 p-4 rounded-xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-indigo-100">Alunos Ativos</span>
-                <Users className="w-5 h-5 text-blue-300" />
+                <span className="text-sm font-medium text-indigo-100">Treinos Finalizados</span>
+                <CheckCircle2 className="w-5 h-5 text-green-300" />
               </div>
               <div className="flex items-end justify-between">
-                <span className="text-2xl font-bold">{todayMetrics.activeStudents}</span>
+                <span className="text-2xl font-bold">{todayMetrics.completedWorkouts}</span>
                 <span className="text-xs flex items-center text-green-300">
                   <TrendingUp className="w-4 h-4 mr-1" />
-                  5%
-                </span>
-              </div>
-            </div>
-
-            {/* Total de Treinos Programados */}
-            <div className="bg-white/10 p-4 rounded-xl">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-indigo-100">Total Programados</span>
-                <ClipboardList className="w-5 h-5 text-purple-300" />
-              </div>
-              <div className="flex items-end justify-between">
-                <span className="text-2xl font-bold">{todayMetrics.totalScheduled}</span>
-                <span className="text-xs flex items-center text-green-300">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  15%
+                  12%
                 </span>
               </div>
             </div>
@@ -199,22 +168,22 @@ export function TrainerDashboard({ user, onViewChange }: TrainerDashboardProps) 
       </Card>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 w-full">
         {quickStats.map((stat, index) => (
-          <Card key={index} className="border-0 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">{stat.label}</p>
-                  <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+            <Card key={index} className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">{stat.label}</p>
+                    <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                  </div>
+                  <div className={`w-12 h-12 rounded-full ${stat.color} flex items-center justify-center`}>
+                    <stat.icon className="w-6 h-6" />
+                  </div>
                 </div>
-                <div className={`w-12 h-12 rounded-full ${stat.color} flex items-center justify-center`}>
-                  <stat.icon className="w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
