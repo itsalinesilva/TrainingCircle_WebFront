@@ -395,60 +395,94 @@ export function TrainerDashboard({ user, onViewChange }: TrainerDashboardProps) 
         <Card className="border-0 shadow-lg">
           <CardContent className="p-0">
             <div className="divide-y divide-slate-100">
-              {recentEvaluations.map((evaluation, index) => (
-                <div key={index} className="p-4 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4">
-                      <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-900 font-medium">
-                          {evaluation.student.split(' ').map(n => n[0]).join('')}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <p className="font-medium text-slate-900">{evaluation.student}</p>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {evaluation.workout}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-sm text-slate-600">{evaluation.comment}</p>
-                        <div className="mt-2 flex items-center text-sm text-slate-500">
-                          <div className="flex items-center">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`h-4 w-4 ${
-                                  star <= evaluation.rating ? 'text-yellow-400' : 'text-slate-300'
-                                }`}
-                                fill={star <= evaluation.rating ? 'currentColor' : 'none'}
-                              />
-                            ))}
+              {recentEvaluations.map((evaluation, index) => {
+                // Função para obter a cor baseada no nível PSE (1-10)
+                const getPseColor = (level: number) => {
+                  if (level <= 1) return 'bg-blue-200';
+                  if (level <= 3) return 'bg-blue-400';
+                  if (level <= 6) return 'bg-green-500';
+                  if (level <= 8) return 'bg-yellow-400';
+                  if (level === 9) return 'bg-orange-500';
+                  return 'bg-red-600';
+                };
+
+                // Converter a classificação de 1-5 para 1-10 (multiplicando por 2)
+                const pseLevel = Math.min(10, Math.max(1, evaluation.rating * 2));
+                const pseColor = getPseColor(pseLevel);
+                
+                // Obter descrição do nível PSE
+                const getPseDescription = (level: number) => {
+                  if (level <= 1) return 'Muito leve';
+                  if (level <= 3) return 'Leve';
+                  if (level <= 6) return 'Moderado';
+                  if (level <= 8) return 'Vigoroso';
+                  if (level === 9) return 'Difícil';
+                  return 'Máximo';
+                };
+                const pseDescription = getPseDescription(pseLevel);
+
+                return (
+                  <div key={index} className="p-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0">
+                          <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-900 font-medium">
+                            {evaluation.student.split(' ').map(n => n[0]).join('')}
                           </div>
-                          <span className="mx-2">·</span>
-                          <span>{evaluation.date}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2">
+                            <p className="font-medium text-slate-900">{evaluation.student}</p>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              {evaluation.workout}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-sm text-slate-600 line-clamp-2">{evaluation.comment}</p>
+                          
+                          {/* Barra de nível PSE */}
+                          <div className="mt-2">
+                            <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                              <span>Nível de esforço: {pseDescription}</span>
+                              <span>{pseLevel}/10</span>
+                            </div>
+                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${pseColor}`}
+                                style={{ width: `${pseLevel * 10}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-2 flex items-center text-sm text-slate-500">
+                            <div className={`${pseColor} text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center mr-2`}>
+                              {pseLevel}
+                            </div>
+                            <span>{evaluation.date}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="ml-4 flex-shrink-0">
-                      {evaluation.responded ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          <CheckCircle className="mr-1 h-3 w-3" />
-                          Respondida
-                        </span>
-                      ) : (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onViewChange('evaluations')}
-                        >
-                          <MessageSquareIcon className="mr-1 h-3.5 w-3.5" />
-                          Responder
-                        </Button>
-                      )}
+                      <div className="ml-4 flex-shrink-0">
+                        {evaluation.responded ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                            Respondida
+                          </span>
+                        ) : (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => onViewChange('evaluations')}
+                            className="text-xs"
+                          >
+                            <MessageSquareIcon className="mr-1 h-3.5 w-3.5" />
+                            Responder
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             <div className="border-t border-slate-100 px-6 py-4 bg-slate-50 rounded-b-lg">
